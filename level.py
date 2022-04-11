@@ -1,5 +1,5 @@
 import pygame
-from tiles import Tile, BreakableBrick
+from tiles import Tile, BreakableBrick, QuestionBrick, MushroomG, MushroomR, FireFlower
 from settings import tile_size, screen_width, screen_height
 from player import Mario
 from enemy import Enemy
@@ -19,6 +19,7 @@ class Level:
         self.ui = UI(self.display_surface)
         self.timer = 300
         self.score = 0
+        self.coins = 0
 
     def setup_level(self, layout):
 
@@ -27,6 +28,7 @@ class Level:
         self.goal = pygame.sprite.GroupSingle()
         self.foes = pygame.sprite.Group()
         self.constraints = pygame.sprite.Group()
+        self.pUps = pygame.sprite.Group()
 
         for row_index, row in enumerate(layout):
             for col_index, cell in enumerate(row):
@@ -54,6 +56,8 @@ class Level:
                 if cell == 'K':  # Koopa
                     enemy = Enemy((x, y), tile_size, 'K')
                     self.foes.add(enemy)
+                if cell == 'p':  # Piranha Plant TODO
+                    pass
                 if cell == 'P':  # Player
                     player_sprite = Mario((x, y))
                     self.player.add(player_sprite)
@@ -66,9 +70,16 @@ class Level:
                 if cell == 'B':  # Breakable Brick
                     brick = BreakableBrick((x, y), tile_size)
                     self.tiles.add(brick)
-                if cell == 'M' or cell == '?':
-                    tile = Tile((x, y), tile_size)
+                if cell == '?':  # Question Brick
+                    brick = QuestionBrick((x, y), tile_size)
+                    self.tiles.add(brick)
+                if cell == 'M':  # Power-Up Brick
+                    tile = QuestionBrick((x, y), tile_size, True)
                     self.tiles.add(tile)
+                if cell == 'I':  # Invisible Brick TODO
+                    pass
+                if cell == 'L':  # Multi-Hit Brick TODO
+                    pass
 
         print(self.tiles.sprites())
 
@@ -105,6 +116,24 @@ class Level:
                 elif player.direction.x > 0:
                     player.rect.right = sprite.rect.left
 
+        for sprite in self.pUps.sprites():
+            if sprite.rect.colliderect(player.rect):
+                if isinstance(sprite, MushroomR) and player.curForm == 0:
+                    self.player.sprite.curForm = 1
+                    se_break = pygame.mixer.Sound(f'sounds/Mario_PowerUp.mp3')
+                    pygame.mixer.Sound.play(se_break)
+                    sprite.kill()
+                elif isinstance(sprite, FireFlower) and player.curForm == 1:
+                    self.player.sprite.curForm = 2
+                    se_break = pygame.mixer.Sound(f'sounds/Mario_PowerUp.mp3')
+                    pygame.mixer.Sound.play(se_break)
+                    sprite.kill()
+                elif isinstance(sprite, FireFlower) and player.curForm == 2:
+                    self.score += 1000
+                    se_break = pygame.mixer.Sound(f'sounds/Mario_Coin.mp3')
+                    pygame.mixer.Sound.play(se_break)
+                    sprite.kill()
+
     def verticle_collision(self):
         player = self.player.sprite
         player.falling()
@@ -124,6 +153,24 @@ class Level:
                         pygame.mixer.Sound.play(se_break)
                         self.score += 100
                         sprite.kill()
+                    elif isinstance(sprite, QuestionBrick) and sprite.isPower is True and sprite.done is False:
+                        se_break = pygame.mixer.Sound(f'sounds/Mario_Power_UpAppear.mp3')
+                        pygame.mixer.Sound.play(se_break)
+                        if self.player.sprite.curForm == 0:
+                            pUp = MushroomR((sprite.rect.x, sprite.rect.y - 64), tile_size)
+                            self.pUps.add(pUp)
+                        else:
+                            pUp = FireFlower((sprite.rect.x, sprite.rect.y - 64), tile_size)
+                            self.pUps.add(pUp)
+                        sprite.image = pygame.image.load(f'spritesheets/brick_end_0.png')
+                        sprite.done = True
+                    elif isinstance(sprite, QuestionBrick) and sprite.isPower is False and sprite.done is False:
+                        se_break = pygame.mixer.Sound(f'sounds/Mario_Coin.mp3')
+                        pygame.mixer.Sound.play(se_break)
+                        self.score += 100
+                        self.coins += 1
+                        sprite.image = pygame.image.load(f'spritesheets/brick_end_0.png')
+                        sprite.done = True
 
         if player.on_ground and player.direction.y < 0 or player.direction.y > 1:
             player.on_ground = False
@@ -152,9 +199,13 @@ class Level:
         self.enemy_collision_reverse()
         self.foes.draw(self.display_surface)
 
+        # Power Ups
+        self.pUps.update(self.world_shift)
+        self.pUps.draw(self.display_surface)
+
         # Show Score
         self.ui.show_score(self.score)
-        self.ui.show_coins(0)
+        self.ui.show_coins(self.coins)
         self.ui.show_level('1-1')
         self.ui.show_time(self.timer)
 

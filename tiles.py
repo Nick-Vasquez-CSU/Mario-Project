@@ -27,6 +27,7 @@ class Tile(pygame.sprite.Sprite):
     def update(self, x_shift):
         self.rect.x += x_shift
 
+
 class AnimatedTile(Tile):
     def __init__(self, pos, size, type = None, path = None):
         super().__init__(pos, size)
@@ -56,3 +57,52 @@ class BreakableBrick(pygame.sprite.Sprite):
     def update(self, x_shift):
         self.rect.x += x_shift
 
+
+class QuestionBrick(pygame.sprite.Sprite):
+    def __init__(self, pos, size, power=False):
+        super().__init__()
+        self.image = pygame.image.load(f'spritesheets/question_0.png')
+        self.rect = self.image.get_rect(topleft=pos)
+        self.rect.y += size - self.image.get_size()[1]
+        self.isPower = power
+        self.done = False
+        self.pos = pos
+
+    def update(self, x_shift):
+        self.rect.x += x_shift
+
+
+class MushroomR(pygame.sprite.Sprite):
+    def __init__(self, pos, size):
+        super().__init__()
+        self.image = pygame.image.load(f'spritesheets/mushroomR_0.png')
+        self.rect = self.image.get_rect(topleft=pos)
+        self.rect.y += size - self.image.get_size()[1]
+        self.pos = pos
+
+    def update(self, x_shift):
+        self.rect.x += x_shift
+
+
+class MushroomG(pygame.sprite.Sprite):
+    def __init__(self, pos, size):
+        super().__init__()
+        self.image = pygame.image.load(f'spritesheets/mushroomG_0.png')
+        self.rect = self.image.get_rect(topleft=pos)
+        self.rect.y += size - self.image.get_size()[1]
+        self.pos = pos
+
+    def update(self, x_shift):
+        self.rect.x += x_shift
+
+
+class FireFlower(pygame.sprite.Sprite):
+    def __init__(self, pos, size):
+        super().__init__()
+        self.image = pygame.image.load(f'spritesheets/flower_0.png')
+        self.rect = self.image.get_rect(topleft=pos)
+        self.rect.y += size - self.image.get_size()[1]
+        self.pos = pos
+
+    def update(self, x_shift):
+        self.rect.x += x_shift

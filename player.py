@@ -24,7 +24,7 @@ class Mario(pygame.sprite.Sprite):
         self.on_left = False
         self.on_right = False
         # 0 = Small Mario, 1 = Big Mario, 2 = Fire Mario
-        self.curForm = 1
+        self.curForm = 0
 
         # Sound Effects
 
